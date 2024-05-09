@@ -3,7 +3,7 @@ const router = express.Router();
 //validation 
 const { check, validationResult } = require('express-validator');
 //bcrypt 
-const { bcrypt } = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 //jwt
 const jwt = require('jsonwebtoken'); 
 const config = require('config'); 
@@ -49,12 +49,13 @@ router.post(
 
         try {
 
+            // see if user exists
             let user = await User.findOne({ email }); 
-
             
             if (user) {
                 return res.status(400).json({ errors : [{ msg : 'User already exists' }]}); 
             }
+
 
             //build new user 
             user = new User({
@@ -64,10 +65,11 @@ router.post(
                 password
             })
 
-            //encrypt password 
-            const salt = await bcrypt.genSalt(10); 
-            user.password = await bcrypt.hash(password, salt); 
+            // encrypt password 
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(password, salt);
 
+            
             //save new user to db
             //create new user 
             await user.save(); 
@@ -79,6 +81,7 @@ router.post(
                 }
             }
 
+    
             //return jsonwebtoken
             //automatically sign in upon creation 
             jwt.sign(
@@ -96,10 +99,8 @@ router.post(
             res.status(500).send("Server error!"); 
         }
         
-
-     
-
     }
+
 )
 
 
@@ -107,7 +108,13 @@ router.post(
 //@desc     register user
 //@access   public    
 router.get("/", (req, res) => {
-    console.log("hello world")
+   
+
+    
+
+
+
+
 })
 
 

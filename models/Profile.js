@@ -4,7 +4,7 @@ const ProfileSchema  = new mongoose.Schema({
     user: 
     {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'user'
+        ref: 'User'
     },
     includeHoney:  
     {
@@ -20,13 +20,13 @@ const ProfileSchema  = new mongoose.Schema({
     },
     includeDairy: 
     {
-        includeMilk : 
+        includeMilk: 
         {
             type: Boolean, 
             required: true,
             default: false
         },
-        includeCheese : 
+        includeCheese: 
         {
             type: Boolean, 
             required: true,
