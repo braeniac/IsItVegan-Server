@@ -1,26 +1,52 @@
 const { default: mongoose } = require("mongoose");
 
 const ProfileSchema  = new mongoose.Schema({
-    user: {
+    user: 
+    {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user'
     },
-    includeHoney:  {
+    includeHoney:  
+    {
         type: Boolean, 
         required: true,
         default: false
     },
-    includeEggs: {
+    includeEggs: 
+    {
         type: Boolean, 
         required: true,
         default: false
     },
-    includeDairy: {
-        type: Boolean, 
-        required: true,
-        default: false
+    includeDairy: 
+    {
+        includeMilk : 
+        {
+            type: Boolean, 
+            required: true,
+            default: false
+        },
+        includeCheese : 
+        {
+            type: Boolean, 
+            required: true,
+            default: false
+        },
+        includeYogart: 
+        {
+            type: Boolean, 
+            required: true,
+            default: false
+        },
+        includeButter: 
+        {
+            type: Boolean, 
+            required: true,
+            default: false
+        }
     },
-    includeGeletin: {
+    includeGeletin: 
+    {
         type: Boolean, 
         required: true,
         default: false
@@ -28,3 +54,6 @@ const ProfileSchema  = new mongoose.Schema({
 })
 
 module.exports = Profile = mongoose.model("profile", ProfileSchema); 
+
+
+
