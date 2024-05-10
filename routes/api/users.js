@@ -81,7 +81,6 @@ router.post(
                 }
             }
 
-    
             //return jsonwebtoken
             //automatically sign in upon creation 
             jwt.sign(
