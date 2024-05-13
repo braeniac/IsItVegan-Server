@@ -10,7 +10,10 @@ const config = require('config');
 const jwtSecret = config.get('jwtSecret'); 
 
 //model 
-const User = require("../../models/User");  
+const User = require("../../models/User"); 
+
+//auth
+const auth = require("../../middleware/auth"); 
 
 
 //@route    POST api/users
@@ -107,7 +110,7 @@ router.post(
 //@desc     register user
 //@access   public    
 router.get("/", (req, res) => {
-   
+    
 
     
 
