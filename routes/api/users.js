@@ -59,7 +59,6 @@ router.post(
                 return res.status(400).json({ errors : [{ msg : 'User already exists' }]}); 
             }
 
-
             //build new user 
             user = new User({
                 firstName,
@@ -104,21 +103,6 @@ router.post(
     }
 
 )
-
-
-//@route    GET api/users
-//@desc     register user
-//@access   public    
-router.get("/", (req, res) => {
-    
-
-    
-
-
-
-
-})
-
 
 
 module.exports = router; 
