@@ -1,9 +1,13 @@
 const express = require("express"); 
 const router = express.Router();
+
 //auth 
 const auth = require("../../middleware/auth"); 
+//profile 
+const Profile = require("../../models/Profile"); 
 //config
 const config = require("config"); 
+
 // Set the environment variable
 process.env.GOOGLE_APPLICATION_CREDENTIALS = config.get('googleApplicationCredentials');
 //google vision cloud api - ocr 
@@ -14,7 +18,6 @@ const OpenAI = require("openai");
 //image upload 
 const multer  = require('multer'); 
 const fs = require("fs");
-
 
 const storage = multer.diskStorage({
     destination: function(_, _, cb) {
@@ -29,7 +32,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage : storage })
 
 //@route    POST api/analyze
-//@desc     analyze list of ingredients 
+//@desc     check if the ingredients list is vegan friendly.
 //@access   private      
 router.post("/", auth, upload.single("image"), async (req, res) => {
 
@@ -54,6 +57,12 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
 
         //list of ingredients to ignore
         let profile = await Profile.findOne({ user : req.user.id }); 
+
+        if (!profile) {
+            return res.status(400).json({ msg : "Sorry, no profile found."}); 
+        }
+
+        //not vegan but vegetarian (maybe)
         const ignoreIngredients = []; 
         if (profile.includeDairy.includeMilk)   ignoreIngredients.push("milk");
         if (profile.includeDairy.includeCheese) ignoreIngredients.push("cheese");
@@ -63,7 +72,7 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
         if (profile.includeEggs)                ignoreIngredients.push("eggs");
         if (profile.includeGeletin)             ignoreIngredients.push("gelatin");
 
-        //send ingredeints to chatgpt for analysis
+        //send ingredeints to chatgpt3.5-turbo for analysis
         const openAI = new OpenAI({
             apiKey: config.get("openAPI_Key")
         })
@@ -73,10 +82,12 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
             messages: [
                 { 
                     role: "user", 
-                    content:`I have a list of ingredients, and I need to know if the product is vegan-friendly.
-                             Ignore the presence of the following ingredients: ${ignoreIngredients.join(", ")}
-                             If it is vegan, return "true". 
-                             If it is not vegan, return "false". Here are the ingredients: ${ingredeints}.`
+                    content:`Given a list of ingredients, determine if the product is vegan-friendly, 
+                            ignoring the following ingredients: ${ignoreIngredients.join(", ")}. 
+                            If the product is vegan, return 'true' along with a brief explanation 
+                            (in under 100 words) for why it's considered vegan. If it's not vegan, 
+                            return 'false' and explain why it's not vegan. H
+                            ere are the ingredients: ${ingredeints}.`
                 }
             ],
         });
@@ -90,6 +101,7 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
             console.log('File deleted successfully');
         })
 
+        //chatgpt3.5-turbo response
         res.send(response.choices[0].message.content.trim()); 
 
     } catch(err) {
@@ -98,6 +110,8 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
     }
 
 })
+
+
 
 module.exports = router; 
 
