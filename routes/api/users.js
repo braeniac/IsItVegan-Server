@@ -12,10 +12,6 @@ const jwtSecret = config.get('jwtSecret');
 //model 
 const User = require("../../models/User"); 
 
-//auth
-const auth = require("../../middleware/auth"); 
-
-
 //@route    POST api/users
 //@desc     register user
 //@access   public      

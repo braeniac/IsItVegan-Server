@@ -50,6 +50,7 @@ router.post("/", auth, async (req, res) => {
             return res.json(profile); 
         }
 
+        //if profile doesn't exist 
         //create new profile
         profile = new Profile(profileFields); 
         await profile.save(); 
@@ -67,9 +68,6 @@ router.post("/", auth, async (req, res) => {
 //@desc     retieve profile 
 //@access   private    
 router.get("/me", auth, async (req, res) => {
-
-    console.log("hello"); 
-
     try {
         const profile = await Profile.findOne({ user : req.user.id }).populate('user', ['firstName', 'lastName', 'email']); 
         if (!profile) {
@@ -81,6 +79,23 @@ router.get("/me", auth, async (req, res) => {
         res.send(500).send("Server error"); 
     }
 })
+
+
+//@route    DELETE api/profile
+//@desc     deleted profile
+//@access   private   
+router.delete("/", auth, async (req, res) => {
+    try{
+        //delete profile 
+        await Profile.findOneAndDelete({ user : req.user.id }); 
+        //delete user 
+        await User.findByIdAndDelete({ _id : req.user.id }); 
+        res.json({ msg : "User & Profile deleted" })
+    } catch(err) {
+        console.log(err.message); 
+        res.status(500).send("Server error"); 
+    }
+}); 
 
 
 
