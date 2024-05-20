@@ -29,7 +29,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage : storage })
 
 //@route    POST api/analyze
-//@desc     
+//@desc     analyze list of ingredients 
 //@access   private      
 router.post("/", auth, upload.single("image"), async (req, res) => {
 
@@ -38,6 +38,7 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
     }
 
     try { 
+
         const filepath = req.file.path;
         
         //use google vloud vision api for ocr 
@@ -51,6 +52,16 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
         //create ingredients array with response text
         let ingredeints = detections.map(text => text.description).filter((char) => !excludeChars.has(char)).join(); 
 
+        //list of ingredients to ignore
+        let profile = await Profile.findOne({ user : req.user.id }); 
+        const ignoreIngredients = []; 
+        if (profile.includeDairy.includeMilk)   ignoreIngredients.push("milk");
+        if (profile.includeDairy.includeCheese) ignoreIngredients.push("cheese");
+        if (profile.includeDairy.includeYogart) ignoreIngredients.push("yogart");
+        if (profile.includeDairy.includeButter) ignoreIngredients.push("butter");
+        if (profile.includeHoney)               ignoreIngredients.push("honey");
+        if (profile.includeEggs)                ignoreIngredients.push("eggs");
+        if (profile.includeGeletin)             ignoreIngredients.push("gelatin");
 
         //send ingredeints to chatgpt for analysis
         const openAI = new OpenAI({
@@ -62,9 +73,10 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
             messages: [
                 { 
                     role: "user", 
-                    content:`I have a list of ingredients, and I need to know if the product is vegan-friendly. 
-                            If it is vegan, return "true". 
-                            If it is not vegan, return "false". Here are the ingredients: ${ingredients}.`
+                    content:`I have a list of ingredients, and I need to know if the product is vegan-friendly.
+                             Ignore the presence of the following ingredients: ${ignoreIngredients.join(", ")}
+                             If it is vegan, return "true". 
+                             If it is not vegan, return "false". Here are the ingredients: ${ingredeints}.`
                 }
             ],
         });
@@ -78,7 +90,7 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
             console.log('File deleted successfully');
         })
 
-        res.send(response)
+        res.send(response.choices[0].message.content.trim()); 
 
     } catch(err) {
         console.log(err.message); 
@@ -88,3 +100,5 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
 })
 
 module.exports = router; 
+
+
